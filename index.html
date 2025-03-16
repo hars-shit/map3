@@ -114,7 +114,7 @@
 
 
             var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
-                geoJSON: window.am5geodata_worldLow,
+                geoJSON: am5geodata_worldLow,
                 exclude: ["AQ"]
             }));
 
@@ -131,24 +131,29 @@
             });
 
             polygonSeries.mapPolygons.template.adapters.add("tooltipHTML", function (text, target) {
-                var countryId = target.dataItem.get("id");
+    var countryId = target.dataItem.get("id");
 
-                if (!countryFruits[countryId]) {
-                    var randomFruits = [];
-                    for (var i = 0; i < 6; i++) {
-                        randomFruits.push(fruits[Math.floor(Math.random() * fruits.length)]);
-                    }
-                    countryFruits[countryId] = randomFruits;
-                }
+    if (!countryId) return ""; // Prevent errors if ID is missing
 
-                var fruitGrid = `<div style="display: grid; grid-template-columns: repeat(3, auto); gap: 5px; text-align: center;">`;
-                countryFruits[countryId].forEach(fruit => {
-                    fruitGrid += `<div style="padding: 4px; background: rgba(255,255,255,0.2); border-radius: 4px;">${fruit}</div>`;
-                });
-                fruitGrid += `</div>`;
+    if (!countryFruits[countryId]) {
+        var randomFruits = new Set(); // Use Set to avoid duplicates
+        while (randomFruits.size < 6) {
+            randomFruits.add(fruits[Math.floor(Math.random() * fruits.length)]);
+        }
+        countryFruits[countryId] = [...randomFruits]; // Convert Set to array
+    }
 
-                return fruitGrid;
-            });
+    console.log(`Country: ${countryId}, Fruits: ${countryFruits[countryId]}`); // Debugging
+
+    var fruitGrid = `<div style="display: grid; grid-template-columns: repeat(3, auto); gap: 5px; text-align: center;">`;
+    countryFruits[countryId].forEach(fruit => {
+        fruitGrid += `<div style="padding: 4px; background: rgba(255,255,255,0.2); border-radius: 4px;">${fruit}</div>`;
+    });
+    fruitGrid += `</div>`;
+
+    target.set("tooltipText", fruitGrid); // Manually update tooltip
+    return fruitGrid;
+});
 
             polygonSeries.mapPolygons.template.adapters.add("fill", function (fill, target) {
                 var countryId = target.dataItem.get("id");
