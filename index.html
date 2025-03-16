@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map with Continents</title>
+
+    <!-- Styles -->
+    <style>
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+        }
+
+        #chartdiv {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <!-- Resources -->
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+</head>
+
+<body>
+
+    <!-- Chart Container -->
+    <div id="chartdiv"></div>
+
+    <!-- Chart Code -->
+    <script>
+        am5.ready(function () {
+            var root = am5.Root.new("chartdiv");
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            var chart = root.container.children.push(am5map.MapChart.new(root, {
+                panX: "translateX",
+                panY: "translateY",
+                projection: am5map.geoMercator()
+            }));
+
+            function addContinentLabels(chart, root) {
+                var continentSeries = chart.series.push(am5map.MapPointSeries.new(root, {}));
+
+                var continentPositions = {
+                    "Asia": { longitude: 100, latitude: 40 },
+                    "Africa": { longitude: 20, latitude: 0 },
+                    "Europe": { longitude: 15, latitude: 55 },
+                    "North America": { longitude: -100, latitude: 50 },
+                    "South America": { longitude: -60, latitude: -15 },
+                    "Australia": { longitude: 140, latitude: -25 }
+                };
+
+                for (var continent in continentPositions) {
+                    var position = continentPositions[continent];
+
+                    continentSeries.data.push({
+                        geometry: { type: "Point", coordinates: [position.longitude, position.latitude] },
+                        name: continent
+                    });
+
+                    continentSeries.bullets.push(function (root, series, dataItem) {
+                        return am5.Bullet.new(root, {
+                            sprite: am5.Label.new(root, {
+                                text: dataItem.dataContext.name,
+                                fontSize: 14,
+                                fontWeight: "normal",
+                                fill: am5.color(0xffffff),
+                                centerX: am5.p50,
+                                centerY: am5.p50,
+                                layer: 100,
+                                background: am5.RoundedRectangle.new(root, {
+                                    fill: am5.color(0x000000),
+                                    fillOpacity: 0.1,
+                                    cornerRadius: 5
+                                })
+                            })
+                        });
+                    });
+                }
+            }
+
+            addContinentLabels(chart, root);
+
+            var continentColors = {
+                "Asia": am5.color(0xf4a261),
+                "Africa": am5.color(0x2a9d8f),
+                "Europe": am5.color(0x264653),
+                "North America": am5.color(0xe76f51),
+                "South America": am5.color(0x9b5de5),
+                "Oceania": am5.color(0x0096c7)
+            };
+
+          var continents = {
+            "Asia": ["AF", "AM", "AZ", "BH", "BD", "BT", "BN", "KH", "CN", "CY", "GE", "IN", "ID", "IR", "IQ", "IL", "JP", "JO",
+                "KZ", "KW", "KG", "LA", "LB", "MY", "MV", "MN", "MM", "NP", "KP", "OM", "PK", "PH", "QA", "SA", "SG", "KR",
+                "LK", "SY", "TJ", "TH", "TR", "TM", "AE", "UZ", "VN", "YE"],
+            "Africa": ["DZ", "AO", "BJ", "BW", "BF", "BI", "CM", "CV", "CF", "TD", "KM", "CG", "CD", "DJ", "EG", "GQ", "ER", "ET",
+                "GA", "GM", "GH", "GN", "GW", "KE", "LS", "LR", "LY", "MG", "MW", "ML", "MR", "MU", "MA", "MZ", "NA", "NE",
+                "NG", "RW", "ST", "SN", "SC", "SL", "SO", "ZA", "SS", "SD", "SZ", "TZ", "TG", "TN", "UG", "ZM", "ZW"],
+            "Europe": ["AL", "AD", "AT", "BY", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IS",
+                "IE", "IT", "XK", "LV", "LI", "LT", "LU", "MT", "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU",
+                "SM", "RS", "SK", "SI", "ES", "SE", "CH", "UA", "GB", "VA"],
+            "North America": ["AG", "BS", "BB", "BZ", "CA", "CR", "CU", "DM", "DO", "SV", "GD", "GT", "HT", "HN", "JM", "MX", "NI", "PA",
+                "KN", "LC", "VC", "TT", "US"],
+            "South America": ["AR", "BO", "BR", "CL", "CO", "EC", "GY", "PY", "PE", "SR", "UY", "VE"],
+            "Oceania": ["AU", "FJ", "KI", "MH", "FM", "NR", "NZ", "PW", "PG", "WS", "SB", "TO", "TV", "VU"]
+        };
+
+
+            var polygonSeries = chart.series.push(am5map.MapPolygonSeries.new(root, {
+                geoJSON: am5geodata_worldLow,
+                exclude: ["AQ"]
+            }));
+
+            var fruits = ["Apple", "Banana", "Cherry", "Mango", "Strawberry", "Grapes", "Pineapple", "Orange", "Watermelon",
+                "Peach", "Pear", "Plum", "Kiwi", "Papaya", "Blueberry", "Raspberry", "Blackberry", "Fig", "Guava"];
+
+            var countryFruits = {}; // Stores assigned fruits per country
+
+            polygonSeries.mapPolygons.template.setAll({
+                tooltipHTML: "{customFruits}",
+                toggleKey: "active",
+                fillOpacity: 1,
+                interactive: true
+            });
+
+            polygonSeries.mapPolygons.template.adapters.add("tooltipHTML", function (text, target) {
+                var countryId = target.dataItem.get("id");
+
+                if (!countryFruits[countryId]) {
+                    var randomFruits = [];
+                    for (var i = 0; i < 6; i++) {
+                        randomFruits.push(fruits[Math.floor(Math.random() * fruits.length)]);
+                    }
+                    countryFruits[countryId] = randomFruits;
+                }
+
+                var fruitGrid = `<div style="display: grid; grid-template-columns: repeat(3, auto); gap: 5px; text-align: center;">`;
+                countryFruits[countryId].forEach(fruit => {
+                    fruitGrid += `<div style="padding: 4px; background: rgba(255,255,255,0.2); border-radius: 4px;">${fruit}</div>`;
+                });
+                fruitGrid += `</div>`;
+
+                return fruitGrid;
+            });
+
+            polygonSeries.mapPolygons.template.adapters.add("fill", function (fill, target) {
+                var countryId = target.dataItem.get("id");
+                for (var continent in continents) {
+                    if (continents[continent].includes(countryId)) {
+                        return continentColors[continent];
+                    }
+                }
+                return am5.color(0xcccccc);
+            });
+
+            polygonSeries.mapPolygons.template.states.create("hover", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+                fillOpacity: 0.8,
+            });
+
+            polygonSeries.mapPolygons.template.states.create("active", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+                fillOpacity: 0.8,
+            });
+
+            var zoomControl = chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+            zoomControl.homeButton.set("visible", true);
+
+            chart.chartContainer.get("background").events.on("click", function () {
+                chart.goHome();
+            });
+
+            chart.appear(1000, 100);
+        });
+    </script>
+
+</body>
+
+</html>
